@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "langchainetutotial"
+version = "0.1.0"
+description = ""
+authors = ["Sergei Sorochinskii <serhii_sorochynskyi@epam.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+langchain = {extras = ["openai"], version = "^0.3.25"}
+python-dotenv = "^1.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
