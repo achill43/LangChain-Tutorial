@@ -25,17 +25,17 @@ llm = ChatOpenAI(
 )
 
 
-# # Create Prompt Template
-# prompt = ChatPromptTemplate.from_template("Tell me a joke about a {subject}")
+# Create Prompt Template
+prompt_1 = ChatPromptTemplate.from_template("Tell me a joke about a {subject}")
 
 
-# # Create LLM Chain
-# chain_one = prompt | llm
+# Create LLM Chain
+chain_1 = prompt_1 | llm
 
 
-# response = chain_one.invoke({"subject": "dog"})
+response = chain_1.invoke({"subject": "dog"})
 
-# print(f"{response=}")
+print(f"{response=}")
 
 prompt_2 = ChatPromptTemplate.from_messages(
     [
