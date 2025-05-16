@@ -58,11 +58,9 @@ docA = Document(
 
 
 def get_document_from_web(url: str) -> list[Document]:
-    loader = WebBaseLoader(url)
+    loader = WebBaseLoader(web_path=url)
     docs = loader.load()
-    spliter = RecursiveCharacterTextSplitter(
-        chunk_size=200, chunk_overlap=20
-    )
+    spliter = RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=20)
     split_docs = spliter.split_documents(docs)
     return split_docs
 
@@ -73,7 +71,9 @@ def create_db(docs: list[Document]):
     return vector_store
 
 
-docs = get_document_from_web(url="https://www.coursera.org/in/articles/what-is-python-used-for-a-beginners-guide-to-using-python")
+docs = get_document_from_web(
+    url="https://byte93.pythonanywhere.com/articles/articles/biblioteka-asyncio"
+)
 vectorStore = create_db(docs=docs)
 
 prompt_2 = ChatPromptTemplate.from_template(
@@ -84,15 +84,16 @@ Question: {input}
 """
 )
 
-chain_2 = create_stuff_documents_chain(
-    llm=llm, prompt=prompt_2
-)
+chain_2 = create_stuff_documents_chain(llm=llm, prompt=prompt_2)
 
 retrieval = vectorStore.as_retriever()
 retrieval_chain = create_retrieval_chain(retrieval, chain_2)
 
-response = retrieval_chain.invoke({
-    "input": "What is Python?"
-})
+response = retrieval_chain.invoke({"input": "Що таке Asyncio?"})
 
-print(f"{response=}")
+print("")
+print(f"{response.get('context')=}")
+
+text_message = "\n\n".join(doc.page_content for doc in response.get("context", []))
+print("")
+print(text_message)
