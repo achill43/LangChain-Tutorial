@@ -1,8 +1,9 @@
-# Self-Reasoning Agents with Tools
+# Long term SQLLite Agent memory
 import os
 
 from dotenv import load_dotenv
-import langchain
+from langchain_community.chat_message_histories import SQLChatMessageHistory
+from langchain.memory import ConversationBufferMemory
 from langchain.agents import create_openai_functions_agent, AgentExecutor
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
@@ -49,13 +50,28 @@ def create_db(docs: list[Document]):
     vector_store = FAISS.from_documents(docs, embeddings)
     return vector_store
 
-def create_agent():
+def create_agent(session_id: str):
+    # Create message history using SQLite
+    history = SQLChatMessageHistory(
+        session_id=session_id,
+        connection_string="sqlite:///agent_memory.db"  # Replace with your desired database path
+    )
+
+    # Wrap it in buffer memory
+    memory = ConversationBufferMemory(
+        memory_key="chat_history",
+        return_messages=True,
+        chat_memory=history
+    )
+
     prompt_obj = ChatPromptTemplate.from_messages([
         ("system", "You are a friendly assistant called Max."),
         MessagesPlaceholder(variable_name="chat_history"),
         ("human", "{input}"),
         MessagesPlaceholder(variable_name="agent_scratchpad")
     ])
+
+    # The rest is the same
     docs = get_document_from_web(
         url="https://byte93.pythonanywhere.com/articles/articles/biblioteka-asyncio"
     )
@@ -79,25 +95,22 @@ def create_agent():
 
     agentExecutor = AgentExecutor(
         agent=agent_obj,
-        tools=tools
+        tools=tools,
+        memory=memory,  # ✅ Add memory here
+        verbose=True
     )
     return agentExecutor
 
 
 
 if __name__ == "__main__":
-    agent = create_agent()
-    chat_history = [
-    ]
+    session_id = "default_user"  # You can customize this or ask the user
+    agent = create_agent(session_id=session_id)
+
     while True:
-        user_input = str(input("Input: \n"))    # Що таке Asyncio?
+        user_input = str(input("Input: \n"))
         if user_input.lower() == "exit":
             break
 
-        response = agent.invoke({
-            "input": user_input,
-            "chat_history": chat_history
-        })
-        chat_history.append(HumanMessage(content=user_input))
-        chat_history.append(AIMessage(content=response.get('output', "")))
+        response = agent.invoke({"input": user_input})
         print(f"Output: \n {response.get('output')}")

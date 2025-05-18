@@ -1,3 +1,5 @@
 .venv/
 
 .env
+
+agent_memory.db
