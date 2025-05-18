@@ -7,6 +7,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+# from langchain.tools.llm_math.tool import LLMMathTool
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain.tools.retriever import create_retriever_tool
 from langchain_community.document_loaders import WebBaseLoader
@@ -35,6 +36,7 @@ llm_obj = ChatOpenAI(
     temperature=0.7,
 )
 
+
 def get_document_from_web(url: str) -> list[Document]:
     loader = WebBaseLoader(web_path=url)
     docs = loader.load()
@@ -48,13 +50,16 @@ def create_db(docs: list[Document]):
     vector_store = FAISS.from_documents(docs, embeddings)
     return vector_store
 
+
 def create_agent():
-    prompt_obj = ChatPromptTemplate.from_messages([
-        ("system", "You are a friendly assistant called Max."),
-        MessagesPlaceholder(variable_name="chat_history"),
-        ("human", "{input}"),
-        MessagesPlaceholder(variable_name="agent_scratchpad")
-    ])
+    prompt_obj = ChatPromptTemplate.from_messages(
+        [
+            ("system", "You are a friendly assistant called Max."),
+            MessagesPlaceholder(variable_name="chat_history"),
+            ("human", "{input}"),
+            MessagesPlaceholder(variable_name="agent_scratchpad"),
+        ]
+    )
     docs = get_document_from_web(
         url="https://byte93.pythonanywhere.com/articles/articles/biblioteka-asyncio"
     )
@@ -65,38 +70,29 @@ def create_agent():
     retriever_tool = create_retriever_tool(
         retriever=retriever,
         name="lcel_search",
-        description="Use this tool when searching information about Asyncio"
+        description="Use this tool when searching information about Asyncio",
     )
+    # llm_math_tool = LLMMathTool(llm=llm_obj)
 
     tools = [search_tool, retriever_tool]
 
     agent_obj = create_openai_functions_agent(
-        llm=llm_obj,
-        prompt=prompt_obj,
-        tools=tools
+        llm=llm_obj, prompt=prompt_obj, tools=tools
     )
 
-    agentExecutor = AgentExecutor(
-        agent=agent_obj,
-        tools=tools
-    )
+    agentExecutor = AgentExecutor(agent=agent_obj, tools=tools)
     return agentExecutor
-
 
 
 if __name__ == "__main__":
     agent = create_agent()
-    chat_history = [
-    ]
+    chat_history = []
     while True:
-        user_input = str(input("Input: \n"))    # Що таке Asyncio?
+        user_input = str(input("Input: \n"))  # Що таке Asyncio?
         if user_input.lower() == "exit":
             break
 
-        response = agent.invoke({
-            "input": user_input,
-            "chat_history": chat_history
-        })
+        response = agent.invoke({"input": user_input, "chat_history": chat_history})
         chat_history.append(HumanMessage(content=user_input))
-        chat_history.append(AIMessage(content=response.get('output', "")))
+        chat_history.append(AIMessage(content=response.get("output", "")))
         print(f"Output: \n {response.get('output')}")
