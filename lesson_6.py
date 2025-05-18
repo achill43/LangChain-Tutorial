@@ -2,7 +2,6 @@
 import os
 
 from dotenv import load_dotenv
-import langchain
 from langchain.agents import create_openai_functions_agent, AgentExecutor
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document

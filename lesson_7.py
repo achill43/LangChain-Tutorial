@@ -1,4 +1,4 @@
-# Long term SQLLite Agent memory
+# Long term SQLite Agent memory
 import os
 
 from dotenv import load_dotenv
