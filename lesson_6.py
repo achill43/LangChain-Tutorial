@@ -7,7 +7,6 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage, AIMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
-# from langchain.tools.llm_math.tool import LLMMathTool
 from langchain_community.tools.tavily_search import TavilySearchResults
 from langchain.tools.retriever import create_retriever_tool
 from langchain_community.document_loaders import WebBaseLoader
@@ -72,7 +71,6 @@ def create_agent():
         name="lcel_search",
         description="Use this tool when searching information about Asyncio",
     )
-    # llm_math_tool = LLMMathTool(llm=llm_obj)
 
     tools = [search_tool, retriever_tool]
 
