@@ -2,6 +2,7 @@ import PyPDF2
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import json
 from pprint import pprint
 
 load_dotenv()
@@ -13,18 +14,19 @@ def get_text_from_pdf(file_path):
     # Initialize a variable to store text
     text = ""
 
-    with open(file_path, 'rb') as file:
+    with open(file_path, "rb") as file:
         # Create a PDF reader object
         pdf_reader = PyPDF2.PdfReader(file)
-        
+
         # Iterate through all the pages
         for page in pdf_reader.pages:
             # Extract text from each page
             text += page.extract_text()
-    
+
     return text
 
-context = get_text_from_pdf("cv.pdf")
+
+context = get_text_from_pdf("OpetAPI-Tutorial/cv.pdf")
 
 print("Analize your CV is in process...")
 
@@ -48,4 +50,5 @@ response = client.responses.create(
     input=prompt,
 )
 
-pprint(response.output_text)
+responce_dict = json.loads(response.output_text)
+pprint(responce_dict)
