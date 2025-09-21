@@ -37,6 +37,7 @@ llm_obj = ChatOpenAI(
     temperature=0.7,
 )
 
+
 def get_documents(source_path: str, is_file: bool = False) -> list[Document]:
     """
     Loads documents from either a web URL or a local file.
@@ -62,26 +63,30 @@ def create_db(docs: list[Document]):
     vector_store = FAISS.from_documents(docs, embeddings)
     return vector_store
 
+
 def create_agent(session_id: str):
     # Create message history using SQLite
     history = SQLChatMessageHistory(
         session_id=session_id,
-        connection_string="sqlite:///agent_memory.db"  # Replace with your desired database path
+        connection_string="sqlite:///agent_memory.db",  # Replace with your desired database path
     )
 
     # Wrap it in buffer memory
     memory = ConversationBufferMemory(
-        memory_key="chat_history",
-        return_messages=True,
-        chat_memory=history
+        memory_key="chat_history", return_messages=True, chat_memory=history
     )
 
-    prompt_obj = ChatPromptTemplate.from_messages([
-        ("system", "You are a friendly assistant called Max."),
-        MessagesPlaceholder(variable_name="chat_history"),
-        ("human", "{input}"),
-        MessagesPlaceholder(variable_name="agent_scratchpad")
-    ])
+    prompt_obj = ChatPromptTemplate.from_messages(
+        [
+            (
+                "system",
+                "You are a friendly assistant called Max witch given information in Python program language area.",
+            ),
+            MessagesPlaceholder(variable_name="chat_history"),
+            ("human", "{input}"),
+            MessagesPlaceholder(variable_name="agent_scratchpad"),
+        ]
+    )
 
     file_path = "LinkedIn_Cource/answers.txt"
     docs = get_documents(source_path=file_path, is_file=True)
@@ -90,30 +95,24 @@ def create_agent(session_id: str):
 
     retriever_tool = create_retriever_tool(
         retriever=retriever,
-        name="product_search",
-        description="Use this tool to search for phone accessories, cases, and Apple products from our store"
+        name="answer_search",
+        description="Use this tool to search for answers from the documents",
     )
 
     tools = [retriever_tool]
 
     agent_obj = create_openai_functions_agent(
-        llm=llm_obj,
-        prompt=prompt_obj,
-        tools=tools
+        llm=llm_obj, prompt=prompt_obj, tools=tools
     )
 
     agentExecutor = AgentExecutor(
-        agent=agent_obj,
-        tools=tools,
-        memory=memory,  # ✅ Add memory here
-        verbose=True
+        agent=agent_obj, tools=tools, memory=memory, verbose=True  # ✅ Add memory here
     )
     return agentExecutor
 
 
-
 if __name__ == "__main__":
-    session_id = "default_user"  # You can customize this or ask the user
+    session_id = "develper_user"  # You can customize this or ask the user
     agent = create_agent(session_id=session_id)
 
     while True:
