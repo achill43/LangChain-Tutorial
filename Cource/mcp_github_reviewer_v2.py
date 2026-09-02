@@ -170,7 +170,7 @@ def guard_review_tool(tool, allowed, review_list_tool):
 
 
 async def main():
-    model = ChatOpenAI(api_key=api_key, model="gpt-4o", temperature=0.2)
+    model = ChatOpenAI(api_key=api_key, model="gpt-5o", temperature=0.2)
 
     client = MultiServerMCPClient(
         {
